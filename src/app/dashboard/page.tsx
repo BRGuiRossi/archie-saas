@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { User } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import type { Task } from '@/lib/types';
 import { Logo } from '@/components/logo';
 import { Stepper } from '@/components/dashboard/stepper';
@@ -10,6 +12,8 @@ import { Step3Result } from '@/components/dashboard/step-3-result';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import * as z from 'zod';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 // Define a schema for the configuration data to be passed to Step 3
 const formSchema = z.object({
@@ -22,6 +26,27 @@ export default function DashboardPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [projectConfig, setProjectConfig] = useState<ProjectConfig | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        router.push('/login');
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  const handleLogout = async () => {
+    await auth.signOut();
+    router.push('/login');
+  };
 
   const steps = ['Upload Document', 'Configure Project', 'Generate'];
 
@@ -55,16 +80,25 @@ export default function DashboardPage() {
         return <Step1Upload onDocParsed={handleDocParsed} />;
     }
   };
+  
+  if (loading) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-10">
         <Logo />
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-4">
           <Avatar>
-            <AvatarImage src="https://picsum.photos/32/32" data-ai-hint="person" alt="@user" />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarImage src={user?.photoURL || 'https://picsum.photos/32/32'} data-ai-hint="person" alt={user?.displayName || 'User'} />
+            <AvatarFallback>{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
+           <Button variant="outline" onClick={handleLogout}>Logout</Button>
         </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">

@@ -1,12 +1,34 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { auth } from '@/lib/firebase';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 export function AuthForm() {
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Google sign-in error', error);
+      toast({
+        variant: 'destructive',
+        title: 'Sign-in failed',
+        description: 'Could not sign in with Google. Please try again.',
+      });
+    }
+  };
+
   return (
     <Card className="mx-auto max-w-sm">
       <CardHeader>
@@ -28,12 +50,10 @@ export function AuthForm() {
             </div>
             <Input id="password" type="password" required />
           </div>
-          <Link href="/dashboard" legacyBehavior>
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
-          </Link>
-          <Button variant="outline" className="w-full">
+          <Button type="submit" className="w-full" onClick={() => router.push('/dashboard')}>
+            Login
+          </Button>
+          <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
             Login with Google
           </Button>
         </div>
