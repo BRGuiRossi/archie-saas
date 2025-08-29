@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface Step1UploadProps {
-  onDocParsed: (tasks: Task[]) => void;
+  onDocParsed: (tasks: Task[], docText: string) => void;
 }
 
 export function Step1Upload({ onDocParsed }: Step1UploadProps) {
@@ -39,7 +39,9 @@ export function Step1Upload({ onDocParsed }: Step1UploadProps) {
             title: 'Success!',
             description: `Found ${result.tasks.length} tasks in your document.`,
           });
-          onDocParsed(result.tasks);
+          // We don't have the raw text here, so we pass an empty string.
+          // The backend flow now handles text extraction.
+          onDocParsed(result.tasks, ''); 
         } else {
           toast({
             variant: 'destructive',

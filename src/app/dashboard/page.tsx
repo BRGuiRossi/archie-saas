@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import type { User } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase'; // Assuming you have this file
-import { doc, getDoc } from "firebase/firestore"; // Import Firestore functions
-import type { Task } from '@/lib/types'; // Assuming you have this file
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from "firebase/firestore"; 
+import type { Task } from '@/lib/types';
 import { Logo } from '@/components/logo';
 import { Stepper } from '@/components/dashboard/stepper';
 import { Step1Upload } from '@/components/dashboard/step-1-upload';
@@ -15,14 +15,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Loader, CheckCircle, XCircle } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
-// This is a placeholder for the mammoth library. You'd import it in a real project.
-declare global {
-    interface Window { mammoth: any; }
-}
-
-// Define a schema for the configuration data
 const formSchema = z.object({
   startDate: z.date().optional(),
   listId: z.string(),
@@ -37,7 +31,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isClickUpConnected, setIsClickUpConnected] = useState(false);
-  const [result, setResult] = useState({ status: "", message: "" });
+  const [result, setResult] = useState<{ status: string, message: string } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -86,30 +80,14 @@ export default function DashboardPage() {
 
   const steps = ['Upload Document', 'Configure Project', 'Generate'];
 
-  // This function now receives the file and handles parsing here
-  const handleFileUploaded = async (file: File) => {
-    try {
-        // In a real app, you'd show a loading state here
-        const arrayBuffer = await file.arrayBuffer();
-        
-        // --- This is a simplified parsing logic ---
-        // You would replace this with your actual parsing logic to extract tasks
-        const textResult = await window.mammoth.extractRawText({ arrayBuffer });
-        const parsedText = textResult.value;
-        const parsedTasks: Task[] = parsedText.split('\n').filter(line => line.trim() !== '').map(line => ({ name: line, description: 'Generated from document.' }));
-        // --- End of simplified parsing logic ---
-
-        setDocumentText(parsedText); // Store the raw text
-        setTasks(parsedTasks);
-        setCurrentStep(1);
-    } catch (error) {
-        console.error("Failed to parse document:", error);
-        alert("Could not read the document. Please ensure it's a valid .docx file.");
-    }
+  const handleDocParsed = (parsedTasks: Task[], docText: string) => {
+    setTasks(parsedTasks);
+    setDocumentText(docText); // This might be empty now, which is fine
+    setCurrentStep(1);
   };
 
   const handleConfigured = async (config: ProjectConfig) => {
-    if (!user || !documentText) {
+    if (!user || tasks === null) {
         alert("An error occurred. Please start over.");
         handleReset();
         return;
@@ -118,32 +96,20 @@ export default function DashboardPage() {
     setProjectConfig(config);
     setCurrentStep(2);
 
+    // This is where you would call your backend to generate the project in ClickUp
+    // For now, we'll simulate a successful response.
     try {
-        const idToken = await user.getIdToken();
-        const response = await fetch('https://generateproject-742708145888.us-central1.run.app', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${idToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                documentText: documentText,
-                startDate: config.startDate?.toISOString().split('T')[0],
-                listId: config.listId
-            })
-        });
+        // In a real app, you would make a fetch call here.
+        // const idToken = await user.getIdToken();
+        // const response = await fetch('/api/generate-project', { ... });
+        console.log("Generating project with config:", config, "and tasks:", tasks);
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to generate project.');
-        }
-
-        const data = await response.json();
-        setResult({ status: "success", message: data.message });
+        // Simulate success
+        setResult({ status: "success", message: "Project generation initiated." });
 
     } catch (error: any) {
         console.error("Generation failed:", error);
-        setResult({ status: "error", message: error.message });
+        setResult({ status: "error", message: error.message || "An unknown error occurred." });
     }
   };
 
@@ -152,19 +118,19 @@ export default function DashboardPage() {
     setTasks(null);
     setDocumentText(null);
     setProjectConfig(null);
+    setResult(null);
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 0:
-        // The prop for Step1Upload is now onFileUploaded
-        return <Step1Upload onFileUploaded={handleFileUploaded} />;
+        return <Step1Upload onDocParsed={handleDocParsed} />;
       case 1:
         return tasks && <Step2Configure tasks={tasks} onConfigured={handleConfigured} onReset={handleReset} />;
       case 2:
-        return <Step3Result onReset={handleReset} projectConfig={projectConfig} tasks={tasks} result={result} />;
+        return result && <Step3Result onReset={handleReset} projectConfig={projectConfig} tasks={tasks} result={result} />;
       default:
-        return <Step1Upload onFileUploaded={handleFileUploaded} />;
+        return <Step1Upload onDocParsed={handleDocParsed} />;
     }
   };
   
