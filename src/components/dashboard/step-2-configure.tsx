@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import { CheckCircle, Link2, GitMerge } from 'lucide-react';
+import { Label } from '../ui/label';
 
 interface Step2ConfigureProps {
   tasks: Task[];
@@ -29,7 +29,6 @@ const formSchema = z.object({
 });
 
 export function Step2Configure({ tasks, onConfigured, onReset }: Step2ConfigureProps) {
-  const [clickupConnected, setClickupConnected] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,19 +56,9 @@ export function Step2Configure({ tasks, onConfigured, onReset }: Step2ConfigureP
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-2">
-                  <Label>ClickUp Integration</Label>
-                   <Button type="button" variant={clickupConnected ? 'secondary' : 'default'} className="w-full" onClick={() => setClickupConnected(!clickupConnected)}>
-                    {clickupConnected ? (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        ClickUp Connected
-                      </>
-                    ) : (
-                      <>
-                        <Link2 className="mr-2 h-4 w-4" />
-                        Connect to ClickUp
-                      </>
-                    )}
+                   <Button type="button" variant='secondary' className="w-full cursor-default">
+                      <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                      ClickUp Connected
                   </Button>
                 </div>
 
