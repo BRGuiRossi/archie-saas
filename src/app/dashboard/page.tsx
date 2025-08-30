@@ -16,6 +16,7 @@ import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
+import { createTasksInClickUp } from '@/ai/flows/create-tasks-in-clickup';
 
 const formSchema = z.object({
   startDate: z.date().optional(),
@@ -102,27 +103,24 @@ export default function DashboardPage() {
 
     setProjectConfig(config);
     setCurrentStep(2);
+    setResult({ status: "loading", message: "Generating project..." });
 
-    // This is where you would call your backend to generate the project in ClickUp
-    // For now, we'll simulate a successful response.
+
     try {
-        // In a real app, you would make a fetch call here to your backend endpoint.
-        // For example:
-        // const idToken = await user.getIdToken();
-        // const response = await fetch('/api/generate-project', { 
-        //   method: 'POST',
-        //   headers: { 
-        //     'Authorization': `Bearer ${idToken}`,
-        //     'Content-Type': 'application/json' 
-        //   },
-        //   body: JSON.stringify({ config, tasks })
-        // });
-        // const data = await response.json();
-        
-        console.log("Simulating project generation with config:", config, "and tasks:", tasks);
+        const idToken = await user.getIdToken();
+        const response = await createTasksInClickUp({
+            tasks,
+            clickupAccessToken: '', // This will be retrieved on the server
+            listId: config.listId,
+            startDate: config.startDate,
+            userId: user.uid,
+        });
 
-        // Simulate success
-        setResult({ status: "success", message: "Project generation initiated." });
+        if (response.success) {
+            setResult({ status: "success", message: "Project generation initiated." });
+        } else {
+            setResult({ status: "error", message: response.error || "An unknown error occurred." });
+        }
 
     } catch (error: any) {
         console.error("Generation failed:", error);

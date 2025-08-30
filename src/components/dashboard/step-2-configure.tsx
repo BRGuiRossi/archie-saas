@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import { CheckCircle, Link2, GitMerge } from 'lucide-react';
-import { Label } from '../ui/label';
 
 interface Step2ConfigureProps {
   tasks: Task[];
