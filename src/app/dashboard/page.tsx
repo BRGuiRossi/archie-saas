@@ -34,6 +34,11 @@ export default function DashboardPage() {
   const [result, setResult] = useState<{ status: string, message: string } | null>(null);
   const router = useRouter();
 
+  const clientId = process.env.NEXT_PUBLIC_CLICKUP_CLIENT_ID;
+  const redirectUri = (typeof window !== 'undefined') ? `${window.location.origin}/api/clickup/callback` : '';
+  const state = user?.uid;
+  const clickUpAuthUrl = `https://app.clickup.com/api?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+
   useEffect(() => {
     const checkClickUpConnection = async (currentUser: User) => {
       try {
@@ -68,25 +73,6 @@ export default function DashboardPage() {
   const handleLogout = async () => {
     await auth.signOut();
     router.push('/login');
-  };
-  
-  const handleConnectClickUp = () => {
-    const clientId = process.env.NEXT_PUBLIC_CLICKUP_CLIENT_ID;
-    if (!clientId) {
-      alert('ClickUp Client ID is not configured. Please set NEXT_PUBLIC_CLICKUP_CLIENT_ID in your environment variables.');
-      return;
-    }
-    
-    // This should be the URL where ClickUp redirects back to after authorization.
-    const redirectUri = `${window.location.origin}/api/clickup/callback`;
-    
-    if (user) {
-      // The state parameter is used to prevent CSRF attacks and to pass the user ID.
-      const state = user.uid;
-      window.location.href = `https://app.clickup.com/api?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
-    } else {
-      alert("You must be logged in to connect to ClickUp.");
-    }
   };
 
   const steps = ['Upload Document', 'Configure Project', 'Generate'];
@@ -193,9 +179,11 @@ export default function DashboardPage() {
                 <CardContent className="p-8 w-full text-center">
                     <h2 className="text-2xl font-bold mb-2">Connect to ClickUp</h2>
                     <p className="text-gray-400 mb-6">Allow Archie to create tasks in your workspace to get started.</p>
-                    <Button onClick={handleConnectClickUp} size="lg" className="bg-purple-600 hover:bg-purple-700">
+                    <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
+                      <a href={clickUpAuthUrl} target="_blank" rel="noopener noreferrer">
                         Connect to ClickUp
                         <ExternalLink className="w-4 h-4 ml-2" />
+                      </a>
                     </Button>
                 </CardContent>
               </Card>
