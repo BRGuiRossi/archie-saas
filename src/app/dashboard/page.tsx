@@ -71,19 +71,21 @@ export default function DashboardPage() {
   };
   
   const handleConnectClickUp = () => {
-    // Note: You will need to replace YOUR_CLIENT_ID with your actual ClickUp App Client ID.
-    const clientId = 'YOUR_CLIENT_ID'; 
+    const clientId = process.env.NEXT_PUBLIC_CLICKUP_CLIENT_ID;
+    if (!clientId) {
+      alert('ClickUp Client ID is not configured. Please set NEXT_PUBLIC_CLICKUP_CLIENT_ID in your environment variables.');
+      return;
+    }
+    
     // This should be the URL where ClickUp redirects back to after authorization.
-    // It's often a dedicated API route that handles the code exchange.
-    const redirectUri = 'https://studio--archieai-a3yqp.us-central1.hosted.app/api/clickup/callback';
+    const redirectUri = `${window.location.origin}/api/clickup/callback`;
     
     if (user) {
-      // The state parameter is used to prevent CSRF attacks. 
-      // We are using the user's UID as the state.
+      // The state parameter is used to prevent CSRF attacks and to pass the user ID.
       const state = user.uid;
       window.location.href = `https://app.clickup.com/api?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
     } else {
-      alert("You must be logged in.");
+      alert("You must be logged in to connect to ClickUp.");
     }
   };
 
@@ -91,7 +93,7 @@ export default function DashboardPage() {
 
   const handleDocParsed = (parsedTasks: Task[], docText: string) => {
     setTasks(parsedTasks);
-    setDocumentText(docText); // This might be empty now, which is fine
+    setDocumentText(docText);
     setCurrentStep(1);
   };
 
