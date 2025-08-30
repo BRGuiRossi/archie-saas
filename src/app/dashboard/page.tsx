@@ -36,8 +36,7 @@ export default function DashboardPage() {
 
   const clientId = process.env.NEXT_PUBLIC_CLICKUP_CLIENT_ID;
   const redirectUri = 'https://studio--archieai-a3yqp.us-central1.hosted.app/api/clickup/callback';
-  const state = user?.uid;
-  const clickUpAuthUrl = `https://app.clickup.com/api?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+  const clickUpAuthUrl = `https://app.clickup.com/api?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
 
   useEffect(() => {
     const checkClickUpConnection = async (currentUser: User) => {
@@ -193,3 +192,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
