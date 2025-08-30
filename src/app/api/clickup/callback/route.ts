@@ -14,6 +14,9 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // The 'state' is the user's UID.
+  const userId = state;
+
   const clientId = process.env.CLICKUP_CLIENT_ID;
   const clientSecret = process.env.CLICKUP_CLIENT_SECRET;
 
@@ -35,10 +38,15 @@ export async function GET(request: NextRequest) {
     );
 
     const accessToken = response.data.access_token;
-    const userDocRef = doc(db, 'users', state);
+    // Use the userId from the 'state' to save the token.
+    const userDocRef = doc(db, 'users', userId);
     await setDoc(userDocRef, {clickupAccessToken: accessToken}, {merge: true});
 
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    // Redirect to the dashboard and add a query param to indicate success.
+    const redirectUrl = new URL('/dashboard', request.url)
+    redirectUrl.searchParams.set('success', 'true');
+    return NextResponse.redirect(redirectUrl);
+
   } catch (error) {
     console.error('Error exchanging ClickUp code for token:', error);
     return NextResponse.redirect(

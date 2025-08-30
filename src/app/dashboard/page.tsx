@@ -36,7 +36,8 @@ export default function DashboardPage() {
 
   const clientId = process.env.NEXT_PUBLIC_CLICKUP_CLIENT_ID;
   const redirectUri = 'https://studio--archieai-a3yqp.us-central1.hosted.app/api/clickup/callback';
-  const clickUpAuthUrl = `https://app.clickup.com/api?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+  const state = user?.uid;
+  const clickUpAuthUrl = `https://app.clickup.com/api?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
 
   useEffect(() => {
     const checkClickUpConnection = async (currentUser: User) => {
@@ -65,6 +66,15 @@ export default function DashboardPage() {
         setLoading(false);
       }
     });
+
+    // Check for query params on mount
+    const searchParams = new URLSearchParams(window.location.search);
+    const success = searchParams.get('success');
+    if (success === 'true') {
+        // Find a better way to check connection status
+        setIsClickUpConnected(true);
+    }
+
 
     return () => unsubscribe();
   }, [router]);
@@ -192,5 +202,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
