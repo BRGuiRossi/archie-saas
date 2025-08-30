@@ -71,11 +71,20 @@ export default function DashboardPage() {
   };
   
   const handleConnectClickUp = () => {
-      if (user) {
-          window.location.href = `https://generateproject-742708145888.us-central1.run.app/clickup/auth?uid=${user.uid}`;
-      } else {
-          alert("You must be logged in.");
-      }
+    // Note: You will need to replace YOUR_CLIENT_ID with your actual ClickUp App Client ID.
+    const clientId = 'YOUR_CLIENT_ID'; 
+    // This should be the URL where ClickUp redirects back to after authorization.
+    // It's often a dedicated API route that handles the code exchange.
+    const redirectUri = 'https://studio--archieai-a3yqp.us-central1.hosted.app/api/clickup/callback';
+    
+    if (user) {
+      // The state parameter is used to prevent CSRF attacks. 
+      // We are using the user's UID as the state.
+      const state = user.uid;
+      window.location.href = `https://app.clickup.com/api?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
+    } else {
+      alert("You must be logged in.");
+    }
   };
 
   const steps = ['Upload Document', 'Configure Project', 'Generate'];
@@ -99,10 +108,20 @@ export default function DashboardPage() {
     // This is where you would call your backend to generate the project in ClickUp
     // For now, we'll simulate a successful response.
     try {
-        // In a real app, you would make a fetch call here.
+        // In a real app, you would make a fetch call here to your backend endpoint.
+        // For example:
         // const idToken = await user.getIdToken();
-        // const response = await fetch('/api/generate-project', { ... });
-        console.log("Generating project with config:", config, "and tasks:", tasks);
+        // const response = await fetch('/api/generate-project', { 
+        //   method: 'POST',
+        //   headers: { 
+        //     'Authorization': `Bearer ${idToken}`,
+        //     'Content-Type': 'application/json' 
+        //   },
+        //   body: JSON.stringify({ config, tasks })
+        // });
+        // const data = await response.json();
+        
+        console.log("Simulating project generation with config:", config, "and tasks:", tasks);
 
         // Simulate success
         setResult({ status: "success", message: "Project generation initiated." });
