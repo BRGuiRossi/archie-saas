@@ -19,6 +19,9 @@ export async function GET(request: NextRequest) {
 
   const clientId = process.env.CLICKUP_CLIENT_ID;
   const clientSecret = process.env.CLICKUP_CLIENT_SECRET;
+  // The redirect URI must match exactly what's in your ClickUp app settings and what was sent in the initial request.
+  const redirectUri = 'https://studio--archieai-a3yqp.us-central1.hosted.app/api/clickup/callback';
+
 
   if (!clientId || !clientSecret) {
     console.error('ClickUp client ID or secret is not configured.');
@@ -34,6 +37,7 @@ export async function GET(request: NextRequest) {
         client_id: clientId,
         client_secret: clientSecret,
         code: code,
+        redirect_uri: redirectUri, // This parameter is required by ClickUp
       }
     );
 
