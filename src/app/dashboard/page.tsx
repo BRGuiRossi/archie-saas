@@ -16,7 +16,7 @@ import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
-import { createTasksInClickUp } from '@/ai/flows/create-tasks-in-clickup';
+import axios from 'axios';
 
 const formSchema = z.object({
   startDate: z.date().optional(),
@@ -35,11 +35,9 @@ export default function DashboardPage() {
   const [result, setResult] = useState<{ status: string, message: string } | null>(null);
   const router = useRouter();
 
-  const clientId = process.env.NEXT_PUBLIC_CLICKUP_CLIENT_ID;
-  const redirectUri = 'https://studio--archieai-a3yqp.us-central1.hosted.app/api/clickup/callback';
-  const state = user?.uid;
-  // This URL must be constructed carefully.
-  const clickUpAuthUrl = `https://app.clickup.com/api?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}`;
+  // Point to the existing Python backend service
+  const backendUrl = 'https://generateprojectx-742708145888.southamerica-east1.run.app';
+  const clickUpAuthUrl = `${backendUrl}/clickup/auth?uid=${user?.uid}`;
 
   useEffect(() => {
     const checkClickUpConnection = async (currentUser: User) => {
@@ -69,14 +67,13 @@ export default function DashboardPage() {
       }
     });
 
-    // Check for query params on mount
+    // Check for query params on mount from the Python backend redirect
     const searchParams = new URLSearchParams(window.location.search);
-    const success = searchParams.get('success');
-    if (success === 'true') {
-        // Find a better way to check connection status
+    if (searchParams.get('clickup_status') === 'success') {
         setIsClickUpConnected(true);
+        // Clean up the URL
+        router.replace('/dashboard');
     }
-
 
     return () => unsubscribe();
   }, [router]);
@@ -90,12 +87,12 @@ export default function DashboardPage() {
 
   const handleDocParsed = (parsedTasks: Task[], docText: string) => {
     setTasks(parsedTasks);
-    setDocumentText(docText);
+    setDocumentText(docText); // The Python backend needs the raw text
     setCurrentStep(1);
   };
 
   const handleConfigured = async (config: ProjectConfig) => {
-    if (!user || tasks === null) {
+    if (!user || tasks === null || documentText === null) {
         alert("An error occurred. Please start over.");
         handleReset();
         return;
@@ -108,23 +105,30 @@ export default function DashboardPage() {
 
     try {
         const idToken = await user.getIdToken();
-        const response = await createTasksInClickUp({
-            tasks,
-            clickupAccessToken: '', // This will be retrieved on the server
-            listId: config.listId,
-            startDate: config.startDate,
-            userId: user.uid,
-        });
+        const response = await axios.post(
+            `${backendUrl}/generateProject`,
+            {
+                documentText: documentText,
+                startDate: config.startDate?.toISOString().split('T')[0], // Format as YYYY-MM-DD
+                listId: config.listId,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                },
+            }
+        );
 
-        if (response.success) {
-            setResult({ status: "success", message: "Project generation initiated." });
+        if (response.data.status === 'success') {
+            setResult({ status: "success", message: response.data.message || "Project generated successfully." });
         } else {
-            setResult({ status: "error", message: response.error || "An unknown error occurred." });
+            setResult({ status: "error", message: response.data.error || "An unknown error occurred." });
         }
 
     } catch (error: any) {
         console.error("Generation failed:", error);
-        setResult({ status: "error", message: error.message || "An unknown error occurred." });
+        const errorMessage = error.response?.data?.error || error.message || "An unknown error occurred.";
+        setResult({ status: "error", message: errorMessage });
     }
   };
 
@@ -141,6 +145,7 @@ export default function DashboardPage() {
       case 0:
         return <Step1Upload onDocParsed={handleDocParsed} />;
       case 1:
+        // We still use the tasks extracted on the client for display purposes
         return tasks && <Step2Configure tasks={tasks} onConfigured={handleConfigured} onReset={handleReset} />;
       case 2:
         return result && <Step3Result onReset={handleReset} projectConfig={projectConfig} tasks={tasks} result={result} />;
@@ -187,8 +192,8 @@ export default function DashboardPage() {
                 <CardContent className="p-8 w-full text-center">
                     <h2 className="text-2xl font-bold mb-2">Connect to ClickUp</h2>
                     <p className="text-gray-400 mb-6">Allow Archie to create tasks in your workspace to get started.</p>
-                    <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
-                      <a href={clickUpAuthUrl} target="_blank" rel="noopener noreferrer">
+                    <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700" disabled={!user}>
+                      <a href={clickUpAuthUrl}>
                         Connect to ClickUp
                         <ExternalLink className="w-4 h-4 ml-2" />
                       </a>

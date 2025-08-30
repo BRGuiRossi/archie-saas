@@ -6,6 +6,8 @@ import { extractTasksFromDocument } from '@/ai/flows/extract-tasks-from-document
 import type { Task } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import mammoth from 'mammoth';
+
 
 interface Step1UploadProps {
   onDocParsed: (tasks: Task[], docText: string) => void;
@@ -33,15 +35,22 @@ export function Step1Upload({ onDocParsed }: Step1UploadProps) {
     reader.onload = async (e) => {
       const dataUri = e.target?.result as string;
       try {
+        // We still run the client-side extraction to get tasks for display purposes in Step 2.
+        // The Python backend will do its own analysis on the raw text.
         const result = await extractTasksFromDocument({ documentDataUri: dataUri });
+
+        // Extract raw text for the Python backend
+        const base64Data = dataUri.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        const textResult = await mammoth.extractRawText({ buffer });
+        const docxText = textResult.value;
+
         if (result.tasks && result.tasks.length > 0) {
           toast({
             title: 'Success!',
             description: `Found ${result.tasks.length} tasks in your document.`,
           });
-          // We don't have the raw text here, so we pass an empty string.
-          // The backend flow now handles text extraction.
-          onDocParsed(result.tasks, ''); 
+          onDocParsed(result.tasks, docxText); 
         } else {
           toast({
             variant: 'destructive',
