@@ -19,7 +19,65 @@ export function Step1Upload({ onDocParsed }: Step1UploadProps) {
   const [fileName, setFileName] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleFile = async (file: File) => {
+  const processFile = async (file: File) => {
+    setIsLoading(true);
+    setFileName(file.name);
+
+    try {
+      // Create two promises to read the file in two different ways
+      const readAsDataUrl = new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target?.result as string);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+      });
+
+      const readAsArrayBuffer = new Promise<ArrayBuffer>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target?.result as ArrayBuffer);
+        reader.onerror = (error) => reject(error);
+        reader.readAsArrayBuffer(file);
+      });
+
+      // Wait for both to complete
+      const [dataUri, arrayBuffer] = await Promise.all([readAsDataUrl, readAsArrayBuffer]);
+
+      // Use the appropriate format for each function
+      const [result, textResult] = await Promise.all([
+        extractTasksFromDocument({ documentDataUri: dataUri }),
+        mammoth.extractRawText({ arrayBuffer })
+      ]);
+      
+      const docxText = textResult.value;
+
+      if (result.tasks && result.tasks.length > 0) {
+        toast({
+          title: 'Success!',
+          description: `Found ${result.tasks.length} tasks in your document.`,
+        });
+        onDocParsed(result.tasks, docxText);
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'No Tasks Found',
+          description: 'The AI could not identify any tasks in your document. Please try another file.',
+        });
+        setFileName(null);
+      }
+    } catch (err) {
+      console.error(err);
+      toast({
+        variant: 'destructive',
+        title: 'Parsing Failed',
+        description: 'An error occurred while parsing the document. Please try again.',
+      });
+      setFileName(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFile = (file: File) => {
     if (file.type !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       toast({
         variant: 'destructive',
@@ -28,50 +86,7 @@ export function Step1Upload({ onDocParsed }: Step1UploadProps) {
       });
       return;
     }
-    setIsLoading(true);
-    setFileName(file.name);
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const dataUri = e.target?.result as string;
-      try {
-        // We still run the client-side extraction to get tasks for display purposes in Step 2.
-        // The Python backend will do its own analysis on the raw text.
-        const result = await extractTasksFromDocument({ documentDataUri: dataUri });
-
-        // Extract raw text for the Python backend
-        const base64Data = dataUri.split(',')[1];
-        const buffer = Buffer.from(base64Data, 'base64');
-        const textResult = await mammoth.extractRawText({ buffer });
-        const docxText = textResult.value;
-
-        if (result.tasks && result.tasks.length > 0) {
-          toast({
-            title: 'Success!',
-            description: `Found ${result.tasks.length} tasks in your document.`,
-          });
-          onDocParsed(result.tasks, docxText); 
-        } else {
-          toast({
-            variant: 'destructive',
-            title: 'No Tasks Found',
-            description: 'The AI could not identify any tasks in your document. Please try another file.',
-          });
-          setFileName(null);
-        }
-      } catch (err) {
-        console.error(err);
-        toast({
-          variant: 'destructive',
-          title: 'Parsing Failed',
-          description: 'An error occurred while parsing the document. Please try again.',
-        });
-        setFileName(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    reader.readAsDataURL(file);
+    processFile(file);
   };
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
