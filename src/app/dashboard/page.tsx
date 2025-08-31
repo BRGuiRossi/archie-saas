@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import type { User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from "firebase/firestore"; 
-import type { Task } from '@/lib/types';
+import type { ExtractedTask, Task } from '@/lib/types';
 import { Logo } from '@/components/logo';
 import { Stepper } from '@/components/dashboard/stepper';
 import { Step1Upload } from '@/components/dashboard/step-1-upload';
@@ -26,7 +26,7 @@ type ProjectConfig = z.infer<typeof formSchema>;
 
 export default function DashboardPage() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [tasks, setTasks] = useState<Task[] | null>(null);
+  const [tasks, setTasks] = useState<ExtractedTask[] | null>(null);
   const [documentText, setDocumentText] = useState<string | null>(null);
   const [projectConfig, setProjectConfig] = useState<ProjectConfig | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -63,10 +63,16 @@ export default function DashboardPage() {
         const searchParams = new URLSearchParams(window.location.search);
         if (searchParams.get('clickup_status') === 'success') {
             setIsClickUpConnected(true);
-            router.replace('/dashboard', undefined); // Use router.replace to clean the URL
+            // Clean the URL by removing the query parameters
+            router.replace('/dashboard', undefined); 
             setLoading(false);
-        } else {
-            // Only check firestore if not coming from a redirect
+        } else if (searchParams.get('clickup_status') === 'error') {
+            // Handle error case if needed
+            setIsClickUpConnected(false);
+            router.replace('/dashboard', undefined);
+            setLoading(false);
+        }
+        else {
             checkClickUpConnection(user);
         }
 
@@ -89,7 +95,7 @@ export default function DashboardPage() {
 
   const steps = ['Upload Document', 'Configure Project', 'Generate'];
 
-  const handleDocParsed = (parsedTasks: Task[], docText: string) => {
+  const handleDocParsed = (parsedTasks: ExtractedTask[], docText: string) => {
     setTasks(parsedTasks);
     setDocumentText(docText);
     setCurrentStep(1);
@@ -106,14 +112,14 @@ export default function DashboardPage() {
     setCurrentStep(2);
     setResult({ status: "loading", message: "Generating project..." });
 
-
     try {
         const idToken = await user.getIdToken();
+        
         const response = await axios.post(
             `${backendUrl}/generateProject`,
             {
                 documentText: documentText,
-                startDate: config.startDate?.toISOString().split('T')[0],
+                startDate: config.startDate?.toISOString().split('T')[0], // Format as YYYY-MM-DD
                 listId: config.listId,
             },
             {
@@ -152,7 +158,8 @@ export default function DashboardPage() {
       case 1:
         return tasks && <Step2Configure tasks={tasks} onConfigured={handleConfigured} onReset={handleReset} />;
       case 2:
-        return result && <Step3Result onReset={handleReset} projectConfig={projectConfig} tasks={tasks} result={result} />;
+        // Casting here as the backend will have the full task structure
+        return result && <Step3Result onReset={handleReset} projectConfig={projectConfig} tasks={tasks as Task[]} result={result} />;
       default:
         return <Step1Upload onDocParsed={handleDocParsed} />;
     }
@@ -195,7 +202,7 @@ export default function DashboardPage() {
               <Card className="min-h-[50vh] flex items-center justify-center transition-all duration-300">
                 <CardContent className="p-8 w-full text-center">
                     <h2 className="text-2xl font-bold mb-2">Connect to ClickUp</h2>
-                    <p className="text-gray-400 mb-6">Allow Archie to create tasks in your workspace to get started.</p>
+                    <p className="text-muted-foreground mb-6">Allow Archie to create tasks in your workspace to get started.</p>
                     <Button asChild size="lg" className="bg-accent hover:bg-accent/90" disabled={!user}>
                       <a href={clickUpAuthUrl}>
                         Connect to ClickUp

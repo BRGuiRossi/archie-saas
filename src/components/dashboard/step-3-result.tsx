@@ -24,7 +24,7 @@ export function Step3Result({ onReset, projectConfig, tasks, result }: Step3Resu
               <PartyPopper className="h-24 w-24 text-accent animate-bounce" />
             </div>
             <h2 className="text-3xl font-bold font-headline mb-2">Project Generated Successfully!</h2>
-            <p className="text-muted-foreground mb-8">Your tasks have been mapped and are ready in ClickUp.</p>
+            <p className="text-muted-foreground mb-8">{result.message}</p>
             <Card className="text-left">
               <CardHeader>
                 <CardTitle>Project Summary</CardTitle>

@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import { UploadCloud, FileText, Loader2 } from 'lucide-react';
 import { extractTasksFromDocument } from '@/ai/flows/extract-tasks-from-document';
-import type { Task } from '@/lib/types';
+import type { ExtractedTask } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import mammoth from 'mammoth';
 
 
 interface Step1UploadProps {
-  onDocParsed: (tasks: Task[], docText: string) => void;
+  onDocParsed: (tasks: ExtractedTask[], docText: string) => void;
 }
 
 export function Step1Upload({ onDocParsed }: Step1UploadProps) {

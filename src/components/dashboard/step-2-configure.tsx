@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import type { Task } from '@/lib/types';
+import type { ExtractedTask } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -11,10 +11,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
-import { CheckCircle, Link2, GitMerge } from 'lucide-react';
+import { CheckCircle, GitMerge } from 'lucide-react';
 
 interface Step2ConfigureProps {
-  tasks: Task[];
+  tasks: ExtractedTask[];
   onConfigured: (data: z.infer<typeof formSchema>) => void;
   onReset: () => void;
 }
