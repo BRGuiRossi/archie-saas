@@ -58,18 +58,23 @@ export default function DashboardPage() {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         setUser(user);
-        checkClickUpConnection(user);
+        
+        // Check for redirect status first
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.get('clickup_status') === 'success') {
+            setIsClickUpConnected(true);
+            router.replace('/dashboard', undefined); // Use router.replace to clean the URL
+            setLoading(false);
+        } else {
+            // Only check firestore if not coming from a redirect
+            checkClickUpConnection(user);
+        }
+
       } else {
         router.push('/login');
         setLoading(false);
       }
     });
-
-    const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get('clickup_status') === 'success') {
-        setIsClickUpConnected(true);
-        router.replace('/dashboard');
-    }
 
     return () => unsubscribe();
   }, [router]);
@@ -103,16 +108,6 @@ export default function DashboardPage() {
 
 
     try {
-        const ipConfig = {
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"
-          }
-        };
-        const { data: { ip } } = await axios.get("https://api.ipify.org?format=json", ipConfig);
-        console.log("User IP Address:", ip);
-
-
         const idToken = await user.getIdToken();
         const response = await axios.post(
             `${backendUrl}/generateProject`,
@@ -125,7 +120,7 @@ export default function DashboardPage() {
                 headers: {
                     Authorization: `Bearer ${idToken}`,
                 },
-                withCredentials: true, // Allow sending credentials
+                withCredentials: true,
             }
         );
 
