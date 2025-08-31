@@ -37,8 +37,7 @@ export default function DashboardPage() {
 
   // Point to the existing Python backend service
   const backendUrl = 'https://generateprojectx-742708145888.southamerica-east1.run.app';
-  const clickUpAuthUrl = `${backendUrl}/clickup/auth?uid=${user?.uid}`;
-
+  
   useEffect(() => {
     const checkClickUpConnection = async (currentUser: User) => {
       try {
@@ -82,6 +81,9 @@ export default function DashboardPage() {
     await auth.signOut();
     router.push('/login');
   };
+  
+  const clickUpAuthUrl = user ? `${backendUrl}/clickup/auth?uid=${user.uid}` : '#';
+
 
   const steps = ['Upload Document', 'Configure Project', 'Generate'];
 
@@ -104,6 +106,17 @@ export default function DashboardPage() {
 
 
     try {
+        // Fetching IP address as requested
+        const ipConfig = {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+          }
+        };
+        const { data: { ip } } = await axios.get("https://api.ipify.org?format=json", ipConfig);
+        console.log("User IP Address:", ip);
+
+
         const idToken = await user.getIdToken();
         const response = await axios.post(
             `${backendUrl}/generateProject`,
@@ -192,7 +205,7 @@ export default function DashboardPage() {
                 <CardContent className="p-8 w-full text-center">
                     <h2 className="text-2xl font-bold mb-2">Connect to ClickUp</h2>
                     <p className="text-gray-400 mb-6">Allow Archie to create tasks in your workspace to get started.</p>
-                    <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700" disabled={!user}>
+                    <Button asChild size="lg" className="bg-accent hover:bg-accent/90" disabled={!user}>
                       <a href={clickUpAuthUrl}>
                         Connect to ClickUp
                         <ExternalLink className="w-4 h-4 ml-2" />
