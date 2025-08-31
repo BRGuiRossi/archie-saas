@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { auth } from '@/lib/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
+import React from 'react';
 
 export function AuthForm() {
   const router = useRouter();
@@ -29,6 +30,13 @@ export function AuthForm() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // For now, simple email/password login just navigates.
+    // In a real app, you would add email/password sign-in logic here.
+    router.push('/dashboard');
+  }
+
   return (
     <Card className="mx-auto max-w-sm">
       <CardHeader>
@@ -36,27 +44,29 @@ export function AuthForm() {
         <CardDescription>Enter your email below to login to your account</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="m@example.com" required />
-          </div>
-          <div className="grid gap-2">
-            <div className="flex items-center">
-              <Label htmlFor="password">Password</Label>
-              <Link href="#" className="ml-auto inline-block text-sm underline" prefetch={false}>
-                Forgot your password?
-              </Link>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" placeholder="m@example.com" required autoComplete="username" />
             </div>
-            <Input id="password" type="password" required />
+            <div className="grid gap-2">
+              <div className="flex items-center">
+                <Label htmlFor="password">Password</Label>
+                <Link href="#" className="ml-auto inline-block text-sm underline" prefetch={false}>
+                  Forgot your password?
+                </Link>
+              </div>
+              <Input id="password" type="password" required autoComplete="current-password"/>
+            </div>
+            <Button type="submit" className="w-full">
+              Login
+            </Button>
+            <Button variant="outline" className="w-full" type="button" onClick={handleGoogleLogin}>
+              Login with Google
+            </Button>
           </div>
-          <Button type="submit" className="w-full" onClick={() => router.push('/dashboard')}>
-            Login
-          </Button>
-          <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
-            Login with Google
-          </Button>
-        </div>
+        </form>
         <div className="mt-4 text-center text-sm">
           Don&apos;t have an account?{' '}
           <Link href="#" className="underline" prefetch={false}>
