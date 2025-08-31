@@ -2,15 +2,13 @@
 
 import { useState } from 'react';
 import { UploadCloud, FileText, Loader2 } from 'lucide-react';
-import { extractTasksFromDocument } from '@/ai/flows/extract-tasks-from-document';
-import type { ExtractedTask } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import mammoth from 'mammoth';
 
 
 interface Step1UploadProps {
-  onDocParsed: (tasks: ExtractedTask[], docText: string) => void;
+  onDocParsed: (docText: string) => void;
 }
 
 export function Step1Upload({ onDocParsed }: Step1UploadProps) {
@@ -24,43 +22,21 @@ export function Step1Upload({ onDocParsed }: Step1UploadProps) {
     setFileName(file.name);
 
     try {
-      // Create two promises to read the file in two different ways
-      const readAsDataUrl = new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (event) => resolve(event.target?.result as string);
-        reader.onerror = (error) => reject(error);
-        reader.readAsDataURL(file);
-      });
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      const docxText = result.value;
 
-      const readAsArrayBuffer = new Promise<ArrayBuffer>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (event) => resolve(event.target?.result as ArrayBuffer);
-        reader.onerror = (error) => reject(error);
-        reader.readAsArrayBuffer(file);
-      });
-
-      // Wait for both to complete
-      const [dataUri, arrayBuffer] = await Promise.all([readAsDataUrl, readAsArrayBuffer]);
-
-      // Use the appropriate format for each function
-      const [result, textResult] = await Promise.all([
-        extractTasksFromDocument({ documentDataUri: dataUri }),
-        mammoth.extractRawText({ arrayBuffer })
-      ]);
-      
-      const docxText = textResult.value;
-
-      if (result.tasks && result.tasks.length > 0) {
+      if (docxText && docxText.trim().length > 0) {
         toast({
           title: 'Success!',
-          description: `Found ${result.tasks.length} tasks in your document.`,
+          description: `Document content extracted.`,
         });
-        onDocParsed(result.tasks, docxText);
+        onDocParsed(docxText);
       } else {
         toast({
           variant: 'destructive',
-          title: 'No Tasks Found',
-          description: 'The AI could not identify any tasks in your document. Please try another file.',
+          title: 'Empty Document',
+          description: 'Could not extract any text from the document. Please try another file.',
         });
         setFileName(null);
       }
