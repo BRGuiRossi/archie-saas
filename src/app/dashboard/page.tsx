@@ -35,7 +35,6 @@ export default function DashboardPage() {
   const [result, setResult] = useState<{ status: string, message: string } | null>(null);
   const router = useRouter();
 
-  // Point to the existing Python backend service
   const backendUrl = 'https://generateprojectx-742708145888.southamerica-east1.run.app';
   
   useEffect(() => {
@@ -66,11 +65,9 @@ export default function DashboardPage() {
       }
     });
 
-    // Check for query params on mount from the Python backend redirect
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get('clickup_status') === 'success') {
         setIsClickUpConnected(true);
-        // Clean up the URL
         router.replace('/dashboard');
     }
 
@@ -89,7 +86,7 @@ export default function DashboardPage() {
 
   const handleDocParsed = (parsedTasks: Task[], docText: string) => {
     setTasks(parsedTasks);
-    setDocumentText(docText); // The Python backend needs the raw text
+    setDocumentText(docText);
     setCurrentStep(1);
   };
 
@@ -106,7 +103,6 @@ export default function DashboardPage() {
 
 
     try {
-        // Fetching IP address as requested
         const ipConfig = {
           headers: {
             "Access-Control-Allow-Origin": "*",
@@ -122,13 +118,14 @@ export default function DashboardPage() {
             `${backendUrl}/generateProject`,
             {
                 documentText: documentText,
-                startDate: config.startDate?.toISOString().split('T')[0], // Format as YYYY-MM-DD
+                startDate: config.startDate?.toISOString().split('T')[0],
                 listId: config.listId,
             },
             {
                 headers: {
                     Authorization: `Bearer ${idToken}`,
                 },
+                withCredentials: true, // Allow sending credentials
             }
         );
 
@@ -158,7 +155,6 @@ export default function DashboardPage() {
       case 0:
         return <Step1Upload onDocParsed={handleDocParsed} />;
       case 1:
-        // We still use the tasks extracted on the client for display purposes
         return tasks && <Step2Configure tasks={tasks} onConfigured={handleConfigured} onReset={handleReset} />;
       case 2:
         return result && <Step3Result onReset={handleReset} projectConfig={projectConfig} tasks={tasks} result={result} />;
