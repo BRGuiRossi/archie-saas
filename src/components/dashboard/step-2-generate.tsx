@@ -47,11 +47,17 @@ export function Step2Generate({ documentText, user, backendUrl, onReset }: Step2
   });
 
   const onSubmit = async (config: ProjectConfig) => {
+    if (!user) {
+      setResult({ status: 'error', message: 'User not authenticated. Please log in again.' });
+      return;
+    }
+    
     setProjectConfig(config);
     setResult({ status: 'loading', message: 'Generating project...' });
 
     try {
-      const idToken = await user.getIdToken();
+      // Force refresh the token to ensure it's not expired.
+      const idToken = await user.getIdToken(true);
       
       const response = await axios.post(
           `${backendUrl}/generateProject`,
