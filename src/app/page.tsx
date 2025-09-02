@@ -216,7 +216,6 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Geração de templates Agile Scrum</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Integração com o workspace do ClickUp</span></li>
               </ul>
-               {/* Link de pagamento para o plano Free (geralmente leva ao login) */}
                <Link href="/login" className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Começar</Link>
             </div>
             
@@ -232,7 +231,6 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Sincronização com múltiplos workspaces</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte prioritário</span></li>
               </ul>
-              {/* ATUALIZE ESTE LINK COM O SEU LINK DE CHECKOUT */}
               <Link href="/login" className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block">Iniciar Teste Gratuito</Link>
             </div>
 
@@ -247,7 +245,6 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Coordenação multi-equipa</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte dedicado</span></li>
               </ul>
-               {/* ATUALIZE ESTE LINK COM O SEU LINK DE CHECKOUT */}
                <Link href="/login" className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Contactar Vendas</Link>
             </div>
           </div>

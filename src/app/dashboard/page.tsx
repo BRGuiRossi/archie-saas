@@ -8,15 +8,17 @@ import { Logo } from '@/components/logo';
 import { Stepper } from '@/components/dashboard/stepper';
 import { Step1Upload } from '@/components/dashboard/step-1-upload';
 import { Step2Generate } from '@/components/dashboard/step-2-generate';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Check } from 'lucide-react';
+import { ExternalLink, Check, LifeBuoy, LogOut, Settings, Star } from 'lucide-react';
 import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 
-function PricingSection({ onSubscribe }: { onSubscribe: (priceId: string) => void; }) {
+function PricingSection({ onSubscribe, isSubscribing }: { onSubscribe: (priceId: string) => void; isSubscribing: boolean; }) {
   return (
     <section id="pricing" className="py-20 md:py-32">
       <div className="max-w-4xl mx-auto text-center">
@@ -53,8 +55,7 @@ function PricingSection({ onSubscribe }: { onSubscribe: (priceId: string) => voi
             <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Sincronização com múltiplos workspaces</span></li>
             <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte prioritário</span></li>
           </ul>
-          {/* O priceId vem do seu dashboard do Stripe */}
-          <Button onClick={() => onSubscribe('price_1PKXq4Rp4yFR3c3g85c5P26C')} className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block">Iniciar Teste Gratuito</Button>
+          <Button onClick={() => onSubscribe('price_1PKXq4Rp4yFR3c3g85c5P26C')} className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block" disabled={isSubscribing}>Iniciar Teste Gratuito</Button>
         </div>
 
         {/* Business Plan */}
@@ -68,13 +69,36 @@ function PricingSection({ onSubscribe }: { onSubscribe: (priceId: string) => voi
             <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Coordenação multi-equipa</span></li>
             <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte dedicado</span></li>
           </ul>
-           {/* O priceId vem do seu dashboard do Stripe */}
-           <Button onClick={() => onSubscribe('price_1PKXrARp4yFR3c3gC63xY62u')} className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Contactar Vendas</Button>
+           <Button onClick={() => onSubscribe('price_1PKXrARp4yFR3c3gC63xY62u')} className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block" disabled={isSubscribing}>Contactar Vendas</Button>
         </div>
       </div>
     </section>
   );
 }
+
+function ManageSubscriptionSection({ onManage, isManaging }: { onManage: () => void; isManaging: boolean; }) {
+  return (
+    <section id="manage-subscription" className="py-20 md:py-32">
+      <div className="max-w-2xl mx-auto text-center">
+         <Card className="glassmorphism-card">
+            <CardHeader>
+                <CardTitle className="text-2xl font-bold text-white">A sua Subscrição</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-slate-400 mb-6">
+                    Obrigado por ser um membro valioso. Pode gerir os detalhes da sua subscrição, visualizar faturas e atualizar as informações de pagamento no portal do cliente.
+                </p>
+                <Button onClick={onManage} className="cta-button w-full max-w-xs mt-4 py-3 px-6 rounded-lg font-semibold text-white transition block mx-auto" disabled={isManaging}>
+                    <Settings className="w-4 h-4 mr-2" />
+                    Gerir Subscrição
+                </Button>
+            </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
 
 export default function DashboardPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -83,24 +107,29 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [isClickUpConnected, setIsClickUpConnected] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
   const backendUrl = 'https://generateprojectx-742708145888.southamerica-east1.run.app';
   
   useEffect(() => {
-    const checkClickUpConnection = async (currentUser: User) => {
+    const checkUserStatus = async (currentUser: User) => {
       try {
         const userDocRef = doc(db, "users", currentUser.uid);
         const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists() && userDocSnap.data().clickupAccessToken) {
-          setIsClickUpConnected(true);
+        if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            setIsClickUpConnected(!!userData.clickupAccessToken);
+            setSubscriptionPlan(userData.subscriptionPlan || 'free'); 
         } else {
-          setIsClickUpConnected(false);
+            setIsClickUpConnected(false);
+            setSubscriptionPlan('free');
         }
       } catch (error) {
         console.error("Error checking Firestore:", error);
         setIsClickUpConnected(false);
+        setSubscriptionPlan('free');
       } finally {
         setLoading(false);
       }
@@ -111,17 +140,24 @@ export default function DashboardPage() {
         setUser(user);
         
         const searchParams = new URLSearchParams(window.location.search);
-        if (searchParams.get('clickup_status') === 'success') {
-            setIsClickUpConnected(true);
-            router.replace('/dashboard', undefined); 
-            setLoading(false);
-        } else if (searchParams.get('clickup_status') === 'error') {
-            setIsClickUpConnected(false);
+        const clickupStatus = searchParams.get('clickup_status');
+        const stripeStatus = searchParams.get('stripe');
+
+        if (clickupStatus) {
+            setIsClickUpConnected(clickupStatus === 'success');
             router.replace('/dashboard', undefined);
-            setLoading(false);
-        } else {
-            checkClickUpConnection(user);
         }
+        
+        if (stripeStatus) {
+            toast({
+                title: stripeStatus === 'success' ? "Pagamento Bem-Sucedido!" : "Pagamento Cancelado",
+                description: stripeStatus === 'success' ? "A sua subscrição foi ativada." : "O processo de pagamento foi cancelado.",
+                variant: stripeStatus === 'success' ? 'default' : 'destructive',
+            });
+            router.replace('/dashboard', undefined); 
+        }
+
+        checkUserStatus(user);
 
       } else {
         router.push('/login');
@@ -130,7 +166,7 @@ export default function DashboardPage() {
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [router, toast]);
   
   const handleSubscribe = async (priceId: string) => {
       if (!user) {
@@ -162,6 +198,11 @@ export default function DashboardPage() {
       }
   };
 
+  const handleManageSubscription = async () => {
+    // This will eventually call the backend to create a Stripe Customer Portal session
+    toast({ title: "A ser implementado", description: "A gestão de subscrições será implementada em breve." });
+  };
+
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -182,10 +223,10 @@ export default function DashboardPage() {
     setDocumentText(null);
   };
   
-  if (loading || isSubscribing) {
+  if (loading || (isSubscribing && subscriptionPlan !== 'free')) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
-        <p>{isSubscribing ? 'A redirecionar para o pagamento...' : 'Loading...'}</p>
+        <p>{isSubscribing ? 'A redirecionar para o pagamento...' : 'A carregar...'}</p>
       </div>
     );
   }
@@ -200,17 +241,52 @@ export default function DashboardPage() {
         return <Step1Upload onDocParsed={handleDocParsed} />;
     }
   }
+  
+  const planName = subscriptionPlan ? subscriptionPlan.charAt(0).toUpperCase() + subscriptionPlan.slice(1) : 'Free';
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-10">
         <Logo />
         <div className="ml-auto flex items-center gap-4">
-          <Avatar>
-            <AvatarImage src={user?.photoURL || 'https://picsum.photos/32/32'} alt={user?.displayName || 'User'} />
-            <AvatarFallback>{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
-          </Avatar>
-            <Button variant="outline" onClick={handleLogout}>Logout</Button>
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                        <Avatar className="h-8 w-8">
+                            <AvatarImage src={user?.photoURL || 'https://picsum.photos/32/32'} alt={user?.displayName || 'User'} />
+                            <AvatarFallback>{user?.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                        </Avatar>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">{user?.displayName}</p>
+                            <p className="text-xs leading-none text-muted-foreground">
+                                {user?.email}
+                            </p>
+                        </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                     <DropdownMenuItem disabled>
+                        <Star className="mr-2 h-4 w-4" />
+                        <span>{planName} Plan</span>
+                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleManageSubscription}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Gerir Subscrição</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                        <LifeBuoy className="mr-2 h-4 w-4" />
+                        <span>Suporte</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Logout</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -226,7 +302,11 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
                 <div className="mt-16">
-                  <PricingSection onSubscribe={handleSubscribe} />
+                  {subscriptionPlan === 'free' ? (
+                     <PricingSection onSubscribe={handleSubscribe} isSubscribing={isSubscribing}/>
+                  ) : (
+                     <ManageSubscriptionSection onManage={handleManageSubscription} isManaging={isSubscribing} />
+                  )}
                 </div>
               </>
             ) : (
