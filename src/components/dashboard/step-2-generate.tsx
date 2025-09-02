@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -45,6 +46,26 @@ export function Step2Generate({ documentText, user, backendUrl, onReset }: Step2
       listId: '',
     },
   });
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (result.status === 'loading') {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    if (result.status === 'loading') {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    } else {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [result.status]);
+
 
   const onSubmit = async (config: ProjectConfig) => {
     if (!user) {
