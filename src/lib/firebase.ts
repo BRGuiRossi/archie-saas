@@ -4,13 +4,12 @@ import { getFirestore } from 'firebase/firestore';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  projectId: "archieai-a3yqp",
-  appId: "1:631589704183:web:78443c850195acc2fb5ef2",
-  storageBucket: "archieai-a3yqp.firebasestorage.app",
-  apiKey: "AIzaSyAKzy0oetT96qm5n7O_xjMnUo3ipyAa2s8",
-  authDomain: "archieai-a3yqp.firebaseapp.com",
-  measurementId: "",
-  messagingSenderId: "631589704183"
+  apiKey: "AIzaSyAojyzuLfdgyZ6ny5D-wxT9vbGa2piP8d8",
+  authDomain: "archie-saas.firebaseapp.com",
+  projectId: "archie-saas",
+  storageBucket: "archie-saas.firebasestorage.app",
+  messagingSenderId: "742708145888",
+  appId: "1:742708145888:web:300810af9cadaff68eaa85"
 };
 
 // Initialize Firebase

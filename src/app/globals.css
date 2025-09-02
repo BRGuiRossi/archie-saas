@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 220 13% 18%;
+    --background: 0 0% 4%;
     --foreground: 210 40% 98%;
     --card: 220 13% 27%;
     --card-foreground: 210 40% 98%;
@@ -40,7 +40,7 @@
   }
 
   .dark {
-    --background: 220 13% 18%;
+    --background: 0 0% 4%;
     --foreground: 210 40% 98%;
     --card: 220 13% 27%;
     --card-foreground: 210 40% 98%;
@@ -69,4 +69,62 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer components {
+    .hero-video-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        z-index: 0;
+    }
+
+    .hero-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(ellipse at center, rgba(10, 10, 10, 0.6) 0%, rgba(10, 10, 10, 0.9) 70%, hsl(var(--background)) 100%);
+    }
+
+    .glassmorphism-card {
+        background: rgba(17, 24, 39, 0.5);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cta-button {
+        background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)));
+        transition: all 0.3s ease;
+        box-shadow: 0 0 15px hsla(var(--accent) / 0.4);
+    }
+
+    .cta-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 30px hsla(var(--accent) / 0.6);
+    }
+
+    /* Animações de Scroll */
+    .reveal {
+        position: relative;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: 1s all ease;
+    }
+
+    .reveal.active {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
