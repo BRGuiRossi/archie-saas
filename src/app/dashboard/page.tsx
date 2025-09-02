@@ -7,23 +7,20 @@ import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from "firebase/firestore"; 
 import { Logo } from '@/components/logo';
 import { Stepper } from '@/components/dashboard/stepper';
-import { Step1Upload } from '@/components/dashboard/step-1-upload';
+import { Step1Upload, type Step1Output } from '@/components/dashboard/step-1-upload';
 import { Step2Generate } from '@/components/dashboard/step-2-generate';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Check, LifeBuoy, LogOut, Settings, Star } from 'lucide-react';
+import { ExternalLink, LifeBuoy, LogOut, Settings, Star } from 'lucide-react';
 import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-
-
-
 export default function DashboardPage() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [documentText, setDocumentText] = useState<string | null>(null);
+  const [step1Data, setStep1Data] = useState<Step1Output | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isClickUpConnected, setIsClickUpConnected] = useState(false);
@@ -65,7 +62,11 @@ export default function DashboardPage() {
         const stripeStatus = searchParams.get('stripe');
 
         if (clickupStatus) {
-            setIsClickUpConnected(clickupStatus === 'success');
+            toast({
+                title: clickupStatus === 'success' ? 'ClickUp Connected!' : 'ClickUp Connection Failed',
+                description: clickupStatus === 'success' ? 'Your account is now connected to ClickUp.' : 'Could not connect to ClickUp. Please try again.',
+                variant: clickupStatus === 'success' ? 'default' : 'destructive',
+            });
             router.replace('/dashboard', undefined);
         }
         
@@ -97,8 +98,6 @@ export default function DashboardPage() {
     setIsManagingSubscription(true);
     try {
         const idToken = await user.getIdToken(true);
-        // This single endpoint can handle both creating a new subscription session (for 'free' users)
-        // and a management session (for paid users), directed by your backend logic.
         const response = await axios.post(
             `${backendUrl}/create-portal-session`, 
             {},
@@ -119,7 +118,6 @@ export default function DashboardPage() {
     }
   };
 
-
   const handleLogout = async () => {
     await auth.signOut();
     router.push('/login');
@@ -129,14 +127,14 @@ export default function DashboardPage() {
 
   const steps = ['Upload Document', 'Generate Project'];
 
-  const handleDocParsed = (docText: string) => {
-    setDocumentText(docText);
+  const handleDocParsed = (data: Step1Output) => {
+    setStep1Data(data);
     setCurrentStep(1);
   };
 
   const handleReset = () => {
     setCurrentStep(0);
-    setDocumentText(null);
+    setStep1Data(null);
   };
   
   if (loading) {
@@ -152,7 +150,7 @@ export default function DashboardPage() {
       case 0:
         return <Step1Upload onDocParsed={handleDocParsed} />;
       case 1:
-        return user && documentText && <Step2Generate documentText={documentText} user={user} backendUrl={backendUrl} onReset={handleReset} />;
+        return user && step1Data && <Step2Generate documentText={step1Data.text} fileSize={step1Data.size} user={user} backendUrl={backendUrl} onReset={handleReset} />;
       default:
         return <Step1Upload onDocParsed={handleDocParsed} />;
     }
@@ -188,9 +186,9 @@ export default function DashboardPage() {
                         <Star className="mr-2 h-4 w-4" />
                         <span>{planName} Plan</span>
                      </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleManageSubscription}>
+                    <DropdownMenuItem onClick={handleManageSubscription} disabled={isManagingSubscription}>
                         <Settings className="mr-2 h-4 w-4" />
-                        <span>Gerir Subscrição</span>
+                        <span>{isManagingSubscription ? 'Redirecionando...' : 'Gerir Subscrição'}</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                         <LifeBuoy className="mr-2 h-4 w-4" />

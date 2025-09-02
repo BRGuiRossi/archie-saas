@@ -6,9 +6,13 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import mammoth from 'mammoth';
 
+export interface Step1Output {
+  text: string;
+  size: number; // in bytes
+}
 
 interface Step1UploadProps {
-  onDocParsed: (docText: string) => void;
+  onDocParsed: (data: Step1Output) => void;
 }
 
 export function Step1Upload({ onDocParsed }: Step1UploadProps) {
@@ -31,7 +35,7 @@ export function Step1Upload({ onDocParsed }: Step1UploadProps) {
           title: 'Success!',
           description: `Document content extracted.`,
         });
-        onDocParsed(docxText);
+        onDocParsed({ text: docxText, size: file.size });
       } else {
         toast({
           variant: 'destructive',

@@ -11,9 +11,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
-import { CheckCircle, Loader2, PartyPopper, XCircle, Calendar, ListTodo, Hash } from 'lucide-react';
+import { CheckCircle, PartyPopper, XCircle, Calendar, ListTodo, Hash } from 'lucide-react';
 import axios from 'axios';
 import { format } from "date-fns";
+import { LoadingProgress } from './loading-progress';
+import Image from 'next/image';
 
 const formSchema = z.object({
   startDate: z.date({
@@ -25,6 +27,7 @@ type ProjectConfig = z.infer<typeof formSchema>;
 
 interface Step2GenerateProps {
   documentText: string;
+  fileSize: number; // in bytes
   user: User;
   backendUrl: string;
   onReset: () => void;
@@ -36,7 +39,7 @@ type ResultState = {
   taskCount?: number;
 }
 
-export function Step2Generate({ documentText, user, backendUrl, onReset }: Step2GenerateProps) {
+export function Step2Generate({ documentText, fileSize, user, backendUrl, onReset }: Step2GenerateProps) {
   const [result, setResult] = useState<ResultState>({ status: 'idle', message: '' });
   const [projectConfig, setProjectConfig] = useState<ProjectConfig | null>(null);
 
@@ -51,15 +54,11 @@ export function Step2Generate({ documentText, user, backendUrl, onReset }: Step2
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (result.status === 'loading') {
         e.preventDefault();
-        e.returnValue = '';
+        e.returnValue = 'Are you sure you want to leave? Project generation is in progress.';
       }
     };
 
-    if (result.status === 'loading') {
-      window.addEventListener('beforeunload', handleBeforeUnload);
-    } else {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    }
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -77,7 +76,6 @@ export function Step2Generate({ documentText, user, backendUrl, onReset }: Step2
     setResult({ status: 'loading', message: 'Generating project...' });
 
     try {
-      // Force refresh the token to ensure it's not expired.
       const idToken = await user.getIdToken(true);
       
       const response = await axios.post(
@@ -111,13 +109,7 @@ export function Step2Generate({ documentText, user, backendUrl, onReset }: Step2
   };
   
   if (result.status === 'loading') {
-    return (
-      <div className="text-center max-w-2xl mx-auto">
-        <Loader2 className="h-24 w-24 text-primary animate-spin mx-auto mb-6" />
-        <h2 className="text-3xl font-bold font-headline mb-2">Generating Project...</h2>
-        <p className="text-muted-foreground mb-8">Please wait while we create your project in ClickUp. This can take a minute.</p>
-      </div>
-    );
+    return <LoadingProgress fileSize={fileSize} />;
   }
 
   if (result.status === 'success') {
@@ -148,7 +140,10 @@ export function Step2Generate({ documentText, user, backendUrl, onReset }: Step2
               </div>
           </CardContent>
         </Card>
-        <Button onClick={onReset} className="mt-8 w-full max-w-xs">
+        <a href="https://clickup.com/" target="_blank" rel="noopener noreferrer" className="inline-block mt-6">
+            <Image src="/clickup-logo.svg" alt="ClickUp Logo" width={120} height={40} />
+        </a>
+        <Button onClick={onReset} className="mt-4 w-full max-w-xs">
           Create Another Project
         </Button>
       </div>
