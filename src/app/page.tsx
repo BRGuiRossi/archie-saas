@@ -216,11 +216,11 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Geração de templates Agile Scrum</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Integração com o workspace do ClickUp</span></li>
               </ul>
-               {/* O plano gratuito normalmente leva o usuário para o login/registro */}
+               {/* Link de pagamento para o plano Free (geralmente leva ao login) */}
                <Link href="/login" className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Começar</Link>
             </div>
             
-            {/* Pro Plan - ATUALIZE ESTE LINK */}
+            {/* Pro Plan */}
             <div className="glassmorphism-card rounded-xl p-8 flex flex-col text-center border-2 border-primary relative shadow-2xl shadow-indigo-500/20">
               <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">MAIS POPULAR</div>
               <h3 className="text-2xl font-bold text-white">Pro</h3>
@@ -232,14 +232,14 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Sincronização com múltiplos workspaces</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte prioritário</span></li>
               </ul>
-              {/* SUBSTITUA '#' PELO SEU LINK DE CHECKOUT DO PLANO PRO */}
-              <Link href="#" className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block">Iniciar Teste Gratuito</Link>
+              {/* ATUALIZE ESTE LINK COM O SEU LINK DE CHECKOUT */}
+              <Link href="/login" className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block">Iniciar Teste Gratuito</Link>
             </div>
 
-            {/* Business Plan - ATUALIZE ESTE LINK */}
+            {/* Business Plan */}
             <div className="glassmorphism-card rounded-xl p-8 flex flex-col text-center">
               <h3 className="text-2xl font-bold text-white">Business</h3>
-              <p className="mt-4"><span className="text-4xl font-bold text-white">$12</span><span className="text-slate-400">/mês</span></p>
+              <p className="mt-4"><span className="text-4xl font-bold text-white">$13</span><span className="text-slate-400">/mês</span></p>
               <p className="mt-2 text-slate-400">Para organizações Agile empresariais.</p>
               <ul className="mt-8 space-y-4 text-slate-300 flex-grow">
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Projetos ilimitados</span></li>
@@ -247,8 +247,8 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Coordenação multi-equipa</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte dedicado</span></li>
               </ul>
-               {/* SUBSTITUA '#' PELO SEU LINK DE CHECKOUT/CONTATO DO PLANO BUSINESS */}
-               <Link href="#" className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Contactar Vendas</Link>
+               {/* ATUALIZE ESTE LINK COM O SEU LINK DE CHECKOUT */}
+               <Link href="/login" className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Contactar Vendas</Link>
             </div>
           </div>
         </section>

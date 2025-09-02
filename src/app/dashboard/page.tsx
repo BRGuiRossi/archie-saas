@@ -12,8 +12,69 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Check } from 'lucide-react';
 import axios from 'axios';
+import { useToast } from '@/hooks/use-toast';
+
+function PricingSection({ onSubscribe }: { onSubscribe: (priceId: string) => void; }) {
+  return (
+    <section id="pricing" className="py-20 md:py-32">
+      <div className="max-w-4xl mx-auto text-center">
+        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 font-headline">
+          Planos para cada fase do seu crescimento
+        </h2>
+        <p className="text-lg text-slate-400 mb-16">
+          Comece de graça e evolua à medida que a sua equipa cresce. Simples e transparente.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Free Plan */}
+        <div className="glassmorphism-card rounded-xl p-8 flex flex-col text-center">
+          <h3 className="text-2xl font-bold text-white">Free</h3>
+          <p className="mt-4"><span className="text-4xl font-bold text-white">$0</span><span className="text-slate-400">/mês</span></p>
+          <p className="mt-2 text-slate-400">Perfeito para equipas Agile a começar.</p>
+          <ul className="mt-8 space-y-4 text-slate-300 flex-grow">
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>3 projetos por mês</span></li>
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Geração de templates Agile Scrum</span></li>
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Integração com o workspace do ClickUp</span></li>
+          </ul>
+           <Button variant="outline" className="w-full mt-8" disabled>Plano Atual</Button>
+        </div>
+        
+        {/* Pro Plan */}
+        <div className="glassmorphism-card rounded-xl p-8 flex flex-col text-center border-2 border-primary relative shadow-2xl shadow-indigo-500/20">
+          <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">MAIS POPULAR</div>
+          <h3 className="text-2xl font-bold text-white">Pro</h3>
+          <p className="mt-4"><span className="text-4xl font-bold text-white">$5</span><span className="text-slate-400">/mês</span></p>
+          <p className="mt-2 text-slate-400">Para equipas Agile em crescimento e Scrum masters.</p>
+          <ul className="mt-8 space-y-4 text-slate-300 flex-grow">
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>50 projetos por mês</span></li>
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Templates avançados do framework Scrum</span></li>
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Sincronização com múltiplos workspaces</span></li>
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte prioritário</span></li>
+          </ul>
+          {/* O priceId vem do seu dashboard do Stripe */}
+          <Button onClick={() => onSubscribe('price_1PKXq4Rp4yFR3c3g85c5P26C')} className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block">Iniciar Teste Gratuito</Button>
+        </div>
+
+        {/* Business Plan */}
+        <div className="glassmorphism-card rounded-xl p-8 flex flex-col text-center">
+          <h3 className="text-2xl font-bold text-white">Business</h3>
+          <p className="mt-4"><span className="text-4xl font-bold text-white">$13</span><span className="text-slate-400">/mês</span></p>
+          <p className="mt-2 text-slate-400">Para organizações Agile empresariais.</p>
+          <ul className="mt-8 space-y-4 text-slate-300 flex-grow">
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Projetos ilimitados</span></li>
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Frameworks Enterprise Scrum & Kanban</span></li>
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Coordenação multi-equipa</span></li>
+            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte dedicado</span></li>
+          </ul>
+           {/* O priceId vem do seu dashboard do Stripe */}
+           <Button onClick={() => onSubscribe('price_1PKXrARp4yFR3c3gC63xY62u')} className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Contactar Vendas</Button>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function DashboardPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -21,7 +82,9 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isClickUpConnected, setIsClickUpConnected] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   const backendUrl = 'https://generateprojectx-742708145888.southamerica-east1.run.app';
   
@@ -56,8 +119,7 @@ export default function DashboardPage() {
             setIsClickUpConnected(false);
             router.replace('/dashboard', undefined);
             setLoading(false);
-        }
-        else {
+        } else {
             checkClickUpConnection(user);
         }
 
@@ -69,6 +131,37 @@ export default function DashboardPage() {
 
     return () => unsubscribe();
   }, [router]);
+  
+  const handleSubscribe = async (priceId: string) => {
+      if (!user) {
+          toast({ variant: "destructive", title: "Erro de Autenticação", description: "Precisa de estar autenticado para subscrever." });
+          return;
+      }
+      setIsSubscribing(true);
+      try {
+          const idToken = await user.getIdToken(true);
+          const response = await axios.post(
+              `${backendUrl}/create-checkout-session`,
+              { priceId: priceId },
+              {
+                  headers: {
+                      Authorization: `Bearer ${idToken}`,
+                  },
+              }
+          );
+
+          if (response.data.url) {
+              window.location.href = response.data.url;
+          } else {
+              throw new Error("URL de checkout não recebida.");
+          }
+      } catch (error) {
+          console.error("Erro ao criar sessão de checkout:", error);
+          toast({ variant: "destructive", title: "Erro de Subscrição", description: "Não foi possível iniciar o processo de pagamento. Por favor, tente novamente." });
+          setIsSubscribing(false);
+      }
+  };
+
 
   const handleLogout = async () => {
     await auth.signOut();
@@ -89,10 +182,10 @@ export default function DashboardPage() {
     setDocumentText(null);
   };
   
-  if (loading) {
+  if (loading || isSubscribing) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
-        <p>Loading...</p>
+        <p>{isSubscribing ? 'A redirecionar para o pagamento...' : 'Loading...'}</p>
       </div>
     );
   }
@@ -132,6 +225,9 @@ export default function DashboardPage() {
                       {renderStep()}
                   </CardContent>
                 </Card>
+                <div className="mt-16">
+                  <PricingSection onSubscribe={handleSubscribe} />
+                </div>
               </>
             ) : (
               <Card className="min-h-[50vh] flex items-center justify-center transition-all duration-300">
