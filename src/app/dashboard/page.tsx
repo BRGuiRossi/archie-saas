@@ -18,28 +18,7 @@ import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-function ManageSubscriptionSection({ onManage, isManaging }: { onManage: () => void; isManaging: boolean; }) {
-  return (
-    <section id="manage-subscription" className="py-20 md:py-32">
-      <div className="max-w-2xl mx-auto text-center">
-         <Card className="glassmorphism-card">
-            <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">Gerir a sua Conta</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className="text-slate-400 mb-6">
-                    A partir do nosso portal seguro, pode atualizar para um novo plano, gerir os detalhes da sua subscrição, visualizar faturas e atualizar as informações de pagamento.
-                </p>
-                <Button onClick={onManage} className="cta-button w-full max-w-xs mt-4 py-3 px-6 rounded-lg font-semibold text-white transition block mx-auto" disabled={isManaging}>
-                    <Settings className="w-4 h-4 mr-2" />
-                    {isManaging ? 'A carregar...' : 'Aceder ao Portal do Cliente'}
-                </Button>
-            </CardContent>
-        </Card>
-      </div>
-    </section>
-  );
-}
+
 
 
 export default function DashboardPage() {
@@ -242,9 +221,6 @@ export default function DashboardPage() {
                       {renderStep()}
                   </CardContent>
                 </Card>
-                <div className="mt-16">
-                  <ManageSubscriptionSection onManage={handleManageSubscription} isManaging={isManagingSubscription} />
-                </div>
               </>
             ) : (
               <Card className="min-h-[50vh] flex items-center justify-center transition-all duration-300">
@@ -265,5 +241,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
