@@ -55,7 +55,9 @@ function PricingSection({ onSubscribe, isSubscribing }: { onSubscribe: (priceId:
             <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Sincronização com múltiplos workspaces</span></li>
             <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte prioritário</span></li>
           </ul>
-          <Button onClick={() => onSubscribe('price_1PKXq4Rp4yFR3c3g85c5P26C')} className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block" disabled={isSubscribing}>Iniciar Teste Gratuito</Button>
+          <Button onClick={() => onSubscribe('price_1PKXq4Rp4yFR3c3g85c5P26C')} className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block" disabled={isSubscribing}>
+            {isSubscribing ? 'A processar...' : 'Iniciar Teste Gratuito'}
+          </Button>
         </div>
 
         {/* Business Plan */}
@@ -69,7 +71,9 @@ function PricingSection({ onSubscribe, isSubscribing }: { onSubscribe: (priceId:
             <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Coordenação multi-equipa</span></li>
             <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte dedicado</span></li>
           </ul>
-           <Button onClick={() => onSubscribe('price_1PKXrARp4yFR3c3gC63xY62u')} className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block" disabled={isSubscribing}>Contactar Vendas</Button>
+           <Button onClick={() => onSubscribe('price_1PKXrARp4yFR3c3gC63xY62u')} className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block" disabled={isSubscribing}>
+            {isSubscribing ? 'A processar...' : 'Contactar Vendas'}
+           </Button>
         </div>
       </div>
     </section>
@@ -90,7 +94,7 @@ function ManageSubscriptionSection({ onManage, isManaging }: { onManage: () => v
                 </p>
                 <Button onClick={onManage} className="cta-button w-full max-w-xs mt-4 py-3 px-6 rounded-lg font-semibold text-white transition block mx-auto" disabled={isManaging}>
                     <Settings className="w-4 h-4 mr-2" />
-                    Gerir Subscrição
+                    {isManaging ? 'A carregar...' : 'Gerir Subscrição'}
                 </Button>
             </CardContent>
         </Card>
@@ -199,8 +203,31 @@ export default function DashboardPage() {
   };
 
   const handleManageSubscription = async () => {
-    // This will eventually call the backend to create a Stripe Customer Portal session
-    toast({ title: "A ser implementado", description: "A gestão de subscrições será implementada em breve." });
+    if (!user) {
+        toast({ variant: "destructive", title: "Erro de Autenticação", description: "Precisa de estar autenticado." });
+        return;
+    }
+    setIsSubscribing(true); // Re-use isSubscribing state for managing
+    try {
+        const idToken = await user.getIdToken(true);
+        const response = await axios.post(
+            `${backendUrl}/create-portal-session`, 
+            {},
+            { 
+                headers: { 
+                    Authorization: `Bearer ${idToken}` 
+                } 
+            }
+        );
+        if (response.data.url) {
+            window.location.href = response.data.url;
+        }
+    } catch (error) {
+        console.error("Erro ao criar sessão do portal:", error);
+        toast({ variant: "destructive", title: "Erro", description: "Não foi possível abrir o portal de gestão. Por favor, tente novamente." });
+    } finally {
+        setIsSubscribing(false);
+    }
   };
 
 
@@ -223,10 +250,10 @@ export default function DashboardPage() {
     setDocumentText(null);
   };
   
-  if (loading || (isSubscribing && subscriptionPlan !== 'free')) {
+  if (loading) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
-        <p>{isSubscribing ? 'A redirecionar para o pagamento...' : 'A carregar...'}</p>
+        <p>A carregar...</p>
       </div>
     );
   }
@@ -291,7 +318,11 @@ export default function DashboardPage() {
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="mx-auto w-full max-w-4xl mt-8">
-            {isClickUpConnected ? (
+            {isSubscribing ? (
+              <div className="flex min-h-[60vh] flex-col items-center justify-center">
+                 <p className="text-lg">A redirecionar para o portal de pagamento...</p>
+              </div>
+            ) : isClickUpConnected ? (
               <>
                 <div className="mb-16 flex justify-center">
                   <Stepper currentStep={currentStep} steps={steps} />
@@ -328,3 +359,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
