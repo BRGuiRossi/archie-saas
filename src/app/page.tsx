@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -217,6 +218,7 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Integração com o workspace do ClickUp</span></li>
               </ul>
                <Link href="/login" className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Começar</Link>
+            
             </div>
             
             {/* Pro Plan */}
@@ -231,7 +233,12 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Sincronização com múltiplos workspaces</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte prioritário</span></li>
               </ul>
-              <Link href="/login" className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block">Iniciar Teste Gratuito</Link>
+              <Link 
+                href="/login"
+                className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block"
+              >
+                Iniciar Teste Gratuito
+              </Link>
             </div>
 
             {/* Business Plan */}
@@ -245,7 +252,12 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Coordenação multi-equipa</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte dedicado</span></li>
               </ul>
-               <Link href="/login" className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Contactar Vendas</Link>
+              <Link 
+                href="/login"
+                className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block"
+              >
+                Econonomize Milhares de Horas de Trabalho
+              </Link>
             </div>
           </div>
         </section>
