@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -16,8 +16,19 @@ import {
   TrendingUp,
   Check,
 } from 'lucide-react';
+import type { User } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function LandingPage() {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     const reveal = () => {
       const reveals = document.querySelectorAll('.reveal');
@@ -38,6 +49,9 @@ export default function LandingPage() {
 
     return () => window.removeEventListener('scroll', reveal);
   }, []);
+  
+  const ctaLink = user ? '/dashboard' : '/login';
+  const loginButtonText = user ? 'Dashboard' : 'Login';
 
   return (
     <div className="overflow-x-hidden bg-background text-foreground">
@@ -66,8 +80,8 @@ export default function LandingPage() {
               <a href="#pricing" className="hover:text-white transition">Preços</a>
             </nav>
             <div>
-              <Link href="/login">
-                <button className="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-5 rounded-lg transition">Login</button>
+              <Link href={ctaLink}>
+                <button className="bg-white/10 hover:bg-white/20 text-white font-semibold py-2 px-5 rounded-lg transition">{loginButtonText}</button>
               </Link>
             </div>
           </div>
@@ -80,7 +94,7 @@ export default function LandingPage() {
           <p className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto mb-8">
             Archie é o seu co-piloto de IA que converte qualquer documento de projeto num plano de ação completo no ClickUp, em segundos. Deixe o caos para trás e abrace a clareza.
           </p>
-          <Link href="/login">
+          <Link href={ctaLink}>
             <button className="cta-button text-white font-bold py-4 px-10 rounded-lg text-xl">
               Experimente a Magia - Grátis
             </button>
@@ -217,7 +231,7 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Geração de templates Agile Scrum</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Integração com o workspace do ClickUp</span></li>
               </ul>
-               <Link href="/login" className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Começar</Link>
+               <Link href={ctaLink} className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Começar</Link>
             
             </div>
             
@@ -234,7 +248,7 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte prioritário</span></li>
               </ul>
               <Link 
-                href="/login"
+                href={ctaLink}
                 className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block"
               >
                 Iniciar Teste Gratuito
@@ -253,7 +267,7 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte dedicado</span></li>
               </ul>
               <Link 
-                href="/login"
+                href={ctaLink}
                 className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block"
               >
                 Econonomize Milhares de Horas de Trabalho
@@ -265,7 +279,7 @@ export default function LandingPage() {
         <section className="text-center py-20 md:py-32 reveal">
           <h2 className="text-4xl md:text-5xl font-bold mb-4 font-headline">Pronto para Revolucionar o seu Planeamento?</h2>
           <p className="text-lg text-slate-400 mb-8 max-w-2xl mx-auto">Comece a usar o Archie gratuitamente hoje mesmo e transforme a sua forma de trabalhar.</p>
-           <Link href="/login">
+           <Link href={ctaLink}>
             <button className="cta-button text-white font-bold py-4 px-10 rounded-lg text-xl">
               Crie o seu Primeiro Projeto Agora
             </button>
