@@ -17,69 +17,6 @@ import { ExternalLink, Check, LifeBuoy, LogOut, Settings, Star } from 'lucide-re
 import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-
-function PricingSection({ onSubscribe, isSubscribing }: { onSubscribe: (priceId: string) => void; isSubscribing: boolean; }) {
-  return (
-    <section id="pricing" className="py-20 md:py-32">
-      <div className="max-w-4xl mx-auto text-center">
-        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 font-headline">
-          Planos para cada fase do seu crescimento
-        </h2>
-        <p className="text-lg text-slate-400 mb-16">
-          Comece de graça e evolua à medida que a sua equipa cresce. Simples e transparente.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Free Plan */}
-        <div className="glassmorphism-card rounded-xl p-8 flex flex-col text-center">
-          <h3 className="text-2xl font-bold text-white">Free</h3>
-          <p className="mt-4"><span className="text-4xl font-bold text-white">$0</span><span className="text-slate-400">/mês</span></p>
-          <p className="mt-2 text-slate-400">Perfeito para equipas Agile a começar.</p>
-          <ul className="mt-8 space-y-4 text-slate-300 flex-grow">
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>3 projetos por mês</span></li>
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Geração de templates Agile Scrum</span></li>
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Integração com o workspace do ClickUp</span></li>
-          </ul>
-           <Button variant="outline" className="w-full mt-8" disabled>Plano Atual</Button>
-        </div>
-        
-        {/* Pro Plan */}
-        <div className="glassmorphism-card rounded-xl p-8 flex flex-col text-center border-2 border-primary relative shadow-2xl shadow-indigo-500/20">
-          <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">MAIS POPULAR</div>
-          <h3 className="text-2xl font-bold text-white">Pro</h3>
-          <p className="mt-4"><span className="text-4xl font-bold text-white">$5</span><span className="text-slate-400">/mês</span></p>
-          <p className="mt-2 text-slate-400">Para equipas Agile em crescimento e Scrum masters.</p>
-          <ul className="mt-8 space-y-4 text-slate-300 flex-grow">
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>50 projetos por mês</span></li>
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Templates avançados do framework Scrum</span></li>
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Sincronização com múltiplos workspaces</span></li>
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte prioritário</span></li>
-          </ul>
-          <Button onClick={() => onSubscribe('price_1PKXq4Rp4yFR3c3g85c5P26C')} className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block" disabled={isSubscribing}>
-            {isSubscribing ? 'A processar...' : 'Iniciar Teste Gratuito'}
-          </Button>
-        </div>
-
-        {/* Business Plan */}
-        <div className="glassmorphism-card rounded-xl p-8 flex flex-col text-center">
-          <h3 className="text-2xl font-bold text-white">Business</h3>
-          <p className="mt-4"><span className="text-4xl font-bold text-white">$13</span><span className="text-slate-400">/mês</span></p>
-          <p className="mt-2 text-slate-400">Para organizações Agile empresariais.</p>
-          <ul className="mt-8 space-y-4 text-slate-300 flex-grow">
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Projetos ilimitados</span></li>
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Frameworks Enterprise Scrum & Kanban</span></li>
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Coordenação multi-equipa</span></li>
-            <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte dedicado</span></li>
-          </ul>
-           <Button onClick={() => onSubscribe('price_1PKXrARp4yFR3c3gC63xY62u')} className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block" disabled={isSubscribing}>
-            {isSubscribing ? 'A processar...' : 'Contactar Vendas'}
-           </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function ManageSubscriptionSection({ onManage, isManaging }: { onManage: () => void; isManaging: boolean; }) {
   return (
@@ -87,15 +24,15 @@ function ManageSubscriptionSection({ onManage, isManaging }: { onManage: () => v
       <div className="max-w-2xl mx-auto text-center">
          <Card className="glassmorphism-card">
             <CardHeader>
-                <CardTitle className="text-2xl font-bold text-white">A sua Subscrição</CardTitle>
+                <CardTitle className="text-2xl font-bold text-white">Gerir a sua Conta</CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-slate-400 mb-6">
-                    Obrigado por ser um membro valioso. Pode gerir os detalhes da sua subscrição, visualizar faturas e atualizar as informações de pagamento no portal do cliente.
+                    A partir do nosso portal seguro, pode atualizar para um novo plano, gerir os detalhes da sua subscrição, visualizar faturas e atualizar as informações de pagamento.
                 </p>
                 <Button onClick={onManage} className="cta-button w-full max-w-xs mt-4 py-3 px-6 rounded-lg font-semibold text-white transition block mx-auto" disabled={isManaging}>
                     <Settings className="w-4 h-4 mr-2" />
-                    {isManaging ? 'A carregar...' : 'Gerir Subscrição'}
+                    {isManaging ? 'A carregar...' : 'Aceder ao Portal do Cliente'}
                 </Button>
             </CardContent>
         </Card>
@@ -111,7 +48,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isClickUpConnected, setIsClickUpConnected] = useState(false);
-  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isManagingSubscription, setIsManagingSubscription] = useState(false);
   const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
@@ -173,44 +110,16 @@ export default function DashboardPage() {
     return () => unsubscribe();
   }, [router, toast]);
   
-  const handleSubscribe = async (priceId: string) => {
-      if (!user) {
-          toast({ variant: "destructive", title: "Erro de Autenticação", description: "Precisa de estar autenticado para subscrever." });
-          return;
-      }
-      setIsSubscribing(true);
-      try {
-          const idToken = await user.getIdToken(true);
-          const response = await axios.post(
-              `${backendUrl}/create-checkout-session`,
-              { priceId: priceId },
-              {
-                  headers: {
-                      Authorization: `Bearer ${idToken}`,
-                  },
-              }
-          );
-
-          if (response.data.url) {
-              window.location.href = response.data.url;
-          } else {
-              throw new Error("URL de checkout não recebida.");
-          }
-      } catch (error) {
-          console.error("Erro ao criar sessão de checkout:", error);
-          toast({ variant: "destructive", title: "Erro de Subscrição", description: "Não foi possível iniciar o processo de pagamento. Por favor, tente novamente." });
-          setIsSubscribing(false);
-      }
-  };
-
   const handleManageSubscription = async () => {
     if (!user) {
         toast({ variant: "destructive", title: "Erro de Autenticação", description: "Precisa de estar autenticado." });
         return;
     }
-    setIsSubscribing(true); // Re-use isSubscribing state for managing
+    setIsManagingSubscription(true);
     try {
         const idToken = await user.getIdToken(true);
+        // This single endpoint can handle both creating a new subscription session (for 'free' users)
+        // and a management session (for paid users), directed by your backend logic.
         const response = await axios.post(
             `${backendUrl}/create-portal-session`, 
             {},
@@ -225,9 +134,9 @@ export default function DashboardPage() {
         }
     } catch (error) {
         console.error("Erro ao criar sessão do portal:", error);
-        toast({ variant: "destructive", title: "Erro", description: "Não foi possível abrir o portal de gestão. Por favor, tente novamente." });
+        toast({ variant: "destructive", title: "Erro", description: "Não foi possível abrir o portal do cliente. Por favor, tente novamente." });
     } finally {
-        setIsSubscribing(false);
+        setIsManagingSubscription(false);
     }
   };
 
@@ -319,9 +228,9 @@ export default function DashboardPage() {
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="mx-auto w-full max-w-4xl mt-8">
-            {isSubscribing ? (
+            {isManagingSubscription ? (
               <div className="flex min-h-[60vh] flex-col items-center justify-center">
-                 <p className="text-lg">A redirecionar para o portal de pagamento...</p>
+                 <p className="text-lg">A redirecionar para o portal do cliente...</p>
               </div>
             ) : isClickUpConnected ? (
               <>
@@ -334,11 +243,7 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
                 <div className="mt-16">
-                  {subscriptionPlan === 'free' ? (
-                     <PricingSection onSubscribe={handleSubscribe} isSubscribing={isSubscribing}/>
-                  ) : (
-                     <ManageSubscriptionSection onManage={handleManageSubscription} isManaging={isSubscribing} />
-                  )}
+                  <ManageSubscriptionSection onManage={handleManageSubscription} isManaging={isManagingSubscription} />
                 </div>
               </>
             ) : (
