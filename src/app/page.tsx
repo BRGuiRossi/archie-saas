@@ -18,9 +18,15 @@ import {
 } from 'lucide-react';
 import type { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
 
 export default function LandingPage() {
   const [user, setUser] = useState<User | null>(null);
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState<string | null>(null);
+  const { toast } = useToast();
+  const backendUrl = 'https://generateprojectx-742708145888.southamerica-east1.run.app';
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -50,8 +56,35 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', reveal);
   }, []);
   
+  const handleCheckout = async (priceId: string) => {
+      if (!user) {
+          router.push('/login');
+          return;
+      }
+      setIsProcessingCheckout(priceId);
+      try {
+          const idToken = await user.getIdToken(true);
+          const response = await axios.post(
+              `${backendUrl}/create-checkout-session`,
+              { priceId },
+              { headers: { Authorization: `Bearer ${idToken}` } }
+          );
+          if (response.data.url) {
+              window.location.href = response.data.url;
+          }
+      } catch (error) {
+          console.error("Erro ao criar sessão de checkout:", error);
+          toast({ variant: "destructive", title: "Erro", description: "Não foi possível iniciar o processo de pagamento." });
+      } finally {
+          setIsProcessingCheckout(null);
+      }
+  };
+
   const ctaLink = user ? '/dashboard' : '/login';
   const loginButtonText = user ? 'Dashboard' : 'Login';
+
+  const proPriceId = 'price_1PgK2eRxUP5v2qP5E1Z4pYoK'; // PRO
+  const businessPriceId = 'price_1PgK2eRxUP5v2qP5E1Z4pYoK'; // BUSINESS - TODO: Replace with actual Business Price ID
 
   return (
     <div className="overflow-x-hidden bg-background text-foreground">
@@ -231,8 +264,9 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Geração de templates Agile Scrum</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Integração com o workspace do ClickUp</span></li>
               </ul>
-               <Link href={ctaLink} className="w-full mt-8 py-3 px-6 rounded-lg font-semibold bg-white/10 hover:bg-white/20 text-white transition block">Começar</Link>
-            
+              <Button asChild className="w-full mt-8" variant="outline">
+                <Link href={ctaLink}>Começar</Link>
+              </Button>
             </div>
             
             {/* Pro Plan */}
@@ -247,12 +281,9 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Sincronização com múltiplos workspaces</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte prioritário</span></li>
               </ul>
-              <Link 
-                href={ctaLink}
-                className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block"
-              >
-                Iniciar Teste Gratuito
-              </Link>
+              <Button onClick={() => handleCheckout(proPriceId)} disabled={isProcessingCheckout === proPriceId} className="cta-button w-full mt-8 py-3 px-6 font-semibold text-white transition block">
+                {isProcessingCheckout === proPriceId ? 'A redirecionar...' : 'Iniciar Teste Gratuito'}
+              </Button>
             </div>
 
             {/* Business Plan */}
@@ -266,12 +297,9 @@ export default function LandingPage() {
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Coordenação multi-equipa</span></li>
                 <li className="flex items-start"><Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" /><span>Suporte dedicado</span></li>
               </ul>
-              <Link 
-                href={ctaLink}
-                className="cta-button w-full mt-8 py-3 px-6 rounded-lg font-semibold text-white transition block"
-              >
-                Econonomize Milhares de Horas de Trabalho
-              </Link>
+              <Button onClick={() => handleCheckout(businessPriceId)} disabled={isProcessingCheckout === businessPriceId} className="cta-button w-full mt-8 py-3 px-6 font-semibold text-white transition block">
+                {isProcessingCheckout === businessPriceId ? 'A redirecionar...' : 'Econonomize Milhares de Horas'}
+              </Button>
             </div>
           </div>
         </section>
@@ -295,3 +323,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    

@@ -188,7 +188,7 @@ export default function DashboardPage() {
                      </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleManageSubscription} disabled={isManagingSubscription}>
                         <Settings className="mr-2 h-4 w-4" />
-                        <span>{isManagingSubscription ? 'Redirecionando...' : 'Gerir Subscrição'}</span>
+                        <span>{isManagingSubscription ? 'A redirecionar...' : 'Gerir Subscrição'}</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                         <LifeBuoy className="mr-2 h-4 w-4" />
@@ -239,3 +239,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
